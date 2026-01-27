@@ -18,10 +18,47 @@ class RAGSystem:
         self.thread_id = str(uuid.uuid4())
         
     def initialize(self):
+        print(f"DEBUG: Initializing RAGSystem with config {config.ACTIVE_LLM_CONFIG}")
         self.vector_db.create_collection(self.collection_name)
         collection = self.vector_db.get_collection(self.collection_name)
+    
+        # Load active configuration
+        active_config = config.LLM_CONFIGS[config.ACTIVE_LLM_CONFIG]
+        model = active_config["model"]
+        temperature = active_config["temperature"]
+    
+    
+        if config.ACTIVE_LLM_CONFIG == "ollama":
+            from langchain_ollama import ChatOllama
+            llm = ChatOllama(model=model, temperature=temperature, base_url=active_config["url"])
         
-        llm = ChatOllama(model=config.LLM_MODEL, temperature=config.LLM_TEMPERATURE)
+        elif config.ACTIVE_LLM_CONFIG == "openai":
+            from langchain_openai import ChatOpenAI
+            llm = ChatOpenAI(model=model, temperature=temperature, openai_api_key=active_config["api_key"])
+        
+        elif config.ACTIVE_LLM_CONFIG == "anthropic":
+            from langchain_anthropic import ChatAnthropic
+            llm = ChatAnthropic(model=model, temperature=temperature)
+        
+        elif config.ACTIVE_LLM_CONFIG == "google":
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            llm = ChatGoogleGenerativeAI(model=model, temperature=temperature)
+        
+        elif config.ACTIVE_LLM_CONFIG == "openrouter":
+            from langchain_openai import ChatOpenAI
+            llm = ChatOpenAI(model=model, temperature=temperature, 
+            openai_api_key=active_config["api_key"],
+            openai_api_base="https://openrouter.ai/api/v1",
+            default_headers={
+        "HTTP-Referer": "https://localhost:3000", # Required for OpenRouter rankings
+        "X-Title": "Agentic-RAG",        # Shows up in your OpenRouter dashboard
+    }
+)
+        
+        else:
+            raise ValueError(f"Unsupported LLM provider: {config.ACTIVE_LLM_CONFIG}")
+    
+        # Continue with tool and graph initialization
         tools = ToolFactory(collection).create_tools()
         self.agent_graph = create_agent_graph(llm, tools)
         
