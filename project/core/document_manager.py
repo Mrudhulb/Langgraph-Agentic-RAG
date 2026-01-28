@@ -1,7 +1,7 @@
 from pathlib import Path
 import shutil
 import config
-from util import pdfs_to_markdowns
+from util import pdfs_to_markdowns, log_timing  
 
 class DocumentManager:
 
@@ -10,6 +10,7 @@ class DocumentManager:
         self.markdown_dir = Path(config.MARKDOWN_DIR)
         self.markdown_dir.mkdir(parents=True, exist_ok=True)
         
+    @log_timing    
     def add_documents(self, document_paths, progress_callback=None):
         if not document_paths:
             return 0, 0

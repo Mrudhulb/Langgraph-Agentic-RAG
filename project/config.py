@@ -8,9 +8,9 @@ CHILD_COLLECTION = "document_child_chunks"
 SPARSE_VECTOR_NAME = "sparse"
 
 # --- Model Configuration ---
-DENSE_MODEL = "BAAI/bge-large-en-v1.5"
+DENSE_MODEL = "BAAI/bge-large-en-v1.5" # <your_dense_model_name>
 SPARSE_MODEL = "Qdrant/bm25"
-LLM_MODEL = "qwen3:4b-instruct-2507-q4_K_M"
+LLM_MODEL = "qwen3:4b-instruct-2507-q4_K_M" # <your_LLM_model_name>
 LLM_TEMPERATURE = 0
 
 # --- Text Splitter Configuration ---
@@ -28,28 +28,44 @@ HEADERS_TO_SPLIT_ON = [
 # --- Multi-Provider LLM Configuration ---
 LLM_CONFIGS = {
     "ollama": {
-        "model": "llama3.2:3b",
-        "url":"http://localhost:11434",
+        "model": "llama3.2:3b", # <your_Ollama_model_name>
+        "url":"http://localhost:11434", # <your_Ollama_url>
         "temperature": 0
     },
     "openai": {
-        "model": "gpt-4o",
-        "temperature": 0
+        "model": "gpt-4o", # <your_OpenAI_model_name>
+        "temperature": 0,
+        "api_key": "<your_api_key>"
     },
     "openrouter": {
-        "model": "nvidia/nemotron-3-nano-30b-a3b:free",
+        "model": "nvidia/nemotron-3-nano-30b-a3b:free", # <your_OpenRouter_model_name>
         "temperature": 0,
-        "api_key": "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"
+        "api_key": "<your_api_key>"
     },
     "anthropic": {
-        "model": "claude-sonnet-4-20250514",
-        "temperature": 0
+        "model": "claude-sonnet-4-20250514", # <your_Anhropic_model_name>
+        "temperature": 0,
+        "api_key": "<your_api_key>"
     },
     "google": {
-        "model": "gemini-2.5-flash",
-        "temperature": 0
+        "model": "gemini-2.5-flash", # <your_Google_model_name>
+        "temperature": 0,
+        "api_key": "<your_api_key>"
     }
 }
 
 # Switch providers by changing this single line
-ACTIVE_LLM_CONFIG = "openrouter"
+ACTIVE_LLM_CONFIG = "openrouter" # <your_active_provider_name>
+
+# --- LangSmith Tracing ---
+LANGCHAIN_TRACING_V2 = 'true'
+LANGCHAIN_ENDPOINT = 'https://api.smith.langchain.com'
+LANGCHAIN_API_KEY = '<your_api_key>' # <your_api_key>
+LANGCHAIN_PROJECT = '<your_project_name>' # <your_project_name>
+
+# --- OCR Configuration ---
+OCR_ENABLED = True # Set to True to enable auto-OCR for image-based PDFs
+OCR_MODEL = "nvidia/nemotron-nano-12b-v2-vl:free" # <your_VLM_model_name>
+
+# --- Tavily Search Configuration ---
+TAVILY_API_KEY = "<your_tavily_api_key>" # <your_tavily_api_key>

@@ -2,6 +2,7 @@ from langchain_core.messages import SystemMessage, HumanMessage, RemoveMessage, 
 from .graph_state import State, AgentState
 from .schemas import QueryAnalysis
 from .prompts import *
+from util import log_timing
 
 def analyze_chat_and_summarize(state: State, llm):
     if len(state["messages"]) < 4:
@@ -55,6 +56,7 @@ def analyze_and_rewrite_query(state: State, llm):
 def human_input_node(state: State):
     return {}
 
+@log_timing
 def agent_node(state: AgentState, llm_with_tools):
     sys_msg = SystemMessage(content=get_rag_agent_prompt())    
     if not state.get("messages"):
@@ -85,6 +87,7 @@ def extract_final_answer(state: AgentState):
         }]
     }
 
+@log_timing
 def aggregate_responses(state: State, llm):
     if not state.get("agent_answers"):
         return {"messages": [AIMessage(content="No answers were generated.")]}

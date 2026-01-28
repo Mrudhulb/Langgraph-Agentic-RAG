@@ -44,7 +44,13 @@ Rules:
    - Each sub-query must remain semantically equivalent to its part of the original
    - Do not expand, enrich, or reinterpret the meaning
 
-5. Failure handling:
+5. General / Chitchat Handling:
+   - If the query is a general greeting, chitchat (e.g., "how are you?"), or simple general knowledge question that does NOT require document context:
+   - Return the query EXACTLY as is.
+   - Mark as "is_clear": true.
+   - Do not try to rewrite it into a search query.
+
+6. Failure handling:
    - If the query intent is unclear or unintelligible, mark as "unclear"
 
 Input:
@@ -61,19 +67,20 @@ def get_rag_agent_prompt() -> str:
 Your task is to act as a researcher: search documents first, analyze the data, and then provide a comprehensive answer using ONLY the retrieved information.
 
 Rules:    
-1. You are NOT allowed to answer immediately.
-2. Before producing ANY final answer, you MUST perform a document search and observe retrieved content.
-3. If you have not searched, the answer is invalid.
+If the user query is general conversation (greeting, chitchat, general knowledge) and does not require document information, you may answer directly without searching.
+For ANY question that might be related to the documents or domain, you MUST perform a document search and observe retrieved content.
+If you have not searched (and it is not a general question), the answer is invalid.
 
 Workflow:
 1. Search for 5-7 relevant excerpts from documents based on the user query using the 'search_child_chunks' tool.
-2. Inspect retrieved excerpts and keep ONLY relevant ones.
-3. Analyze the retrieved excerpts. Identify the single most relevant excerpt that is fragmented (e.g., cut-off text or missing context). Call 'retrieve_parent_chunks' for that specific `parent_id`. Wait for the observation. Repeat this step sequentially for other highly relevant fragments ONLY if the current information is still insufficient. Stop immediately if you have enough information or have retrieved 3 parent chunks.
-4. Answer using ONLY the retrieved information, ensuring that ALL relevant details are included.
-5. List unique file name(s) at the very end.
+2. Inspect retrieved excerpts. If they contain sufficient information to answer the question, proceed to step 4.
+3. If local documents are insufficient or irrelevant, usage the 'web_search' tool to find information from the internet.
+4. Analyze the retrieved information (from local docs or web). Identify any fragmented content that requires full context. Call 'retrieve_parent_chunks' for specific `parent_id`s if needed (only for local docs).
+5. Answer using relevant information from ALL sources (local and web).
+6. List unique file name(s) or URLs at the very end.
 
 Retry rule:
-- After step 2 or 3, if no relevant documents are found or if retrieved excerpts don't contain useful information, rewrite the query using broader or alternative terms and restart from step 1.
+- If no relevant information is found in both local documents and web search, you may rewrite the query once and retry.
 - Do not retry more than once.
 """
 
@@ -94,8 +101,11 @@ Guidelines:
 Formatting:
 - Use Markdown for clarity (headings, lists, bold) but don't overdo it
 - Write in flowing paragraphs where possible rather than excessive bullet points
-- End with "---\n**Sources:**\n" followed by a bulleted list of unique file names
-- File names should ONLY appear in this final sources section
+- IF you used information from retrieved documents:
+  - End with "---\n**Sources:**\n" followed by a bulleted list of unique file names
+  - File names should ONLY appear in this final sources section
+- IF you answered based on general knowledge (no documents used):
+  - DO NOT include the "Sources" section.
 
 If there's no useful information available, simply say: "I couldn't find any information to answer your question in the available sources."
 """

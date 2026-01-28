@@ -72,9 +72,38 @@ class ToolFactory:
         except Exception as e:
             return f"PARENT_RETRIEVAL_ERROR: {str(e)}"
     
+    
+    def _web_search(self, query: str) -> str:
+        """Search the web for information using Tavily.
+        
+        Args:
+            query: Search query string
+        """
+        try:
+            from tavily import TavilyClient
+            import config
+            
+            tavily = TavilyClient(api_key=config.TAVILY_API_KEY)
+            response = tavily.search(query=query, search_depth="advanced")
+            
+            results = response.get("results", [])
+            if not results:
+                return "NO_WEB_RESULTS_FOUND"
+                
+            formatted_results = "\n\n".join([
+                f"Source: {result.get('title', 'Unknown')} ({result.get('url', 'no-url')})\n"
+                f"Content: {result.get('content', '').strip()}"
+                for result in results[:5] 
+            ])
+            return formatted_results
+            
+        except Exception as e:
+            return f"WEB_SEARCH_ERROR: {str(e)}"
+
     def create_tools(self) -> List:
         """Create and return the list of tools."""
         search_tool = tool("search_child_chunks")(self._search_child_chunks)
         retrieve_tool = tool("retrieve_parent_chunks")(self._retrieve_parent_chunks)
+        web_search_tool = tool("web_search")(self._web_search)
         
-        return [search_tool, retrieve_tool]
+        return [search_tool, retrieve_tool, web_search_tool]

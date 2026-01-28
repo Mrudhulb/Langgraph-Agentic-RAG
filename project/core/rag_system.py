@@ -7,6 +7,8 @@ from document_chunker import DocumentChuncker
 from rag_agent.tools import ToolFactory
 from rag_agent.graph import create_agent_graph
 
+from util import log_timing
+
 class RAGSystem:
     
     def __init__(self, collection_name=config.CHILD_COLLECTION):
@@ -16,7 +18,8 @@ class RAGSystem:
         self.chunker = DocumentChuncker()
         self.agent_graph = None
         self.thread_id = str(uuid.uuid4())
-        
+    
+    @log_timing    
     def initialize(self):
         print(f"DEBUG: Initializing RAGSystem with config {config.ACTIVE_LLM_CONFIG}")
         self.vector_db.create_collection(self.collection_name)
