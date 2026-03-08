@@ -21,12 +21,23 @@ git clone https://github.com/Mrudhulb/Langgraph-Agentic-RAG.git
 cd Langgraph-Agentic-RAG
 ```
 
-**Step 2:** Install all required dependencies
+**Step 2:** Create and activate a Virtual Environment
+```bash
+# Windows
+python -m venv .venv
+.venv\Scripts\activate
+
+# macOS/Linux
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+**Step 3:** Install all required dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-**Step 3:** Configure API Keys
+**Step 4:** Configure API Keys
 To run the RAG agent, you MUST configure your environment with the necessary API keys.
 Create a `.env` file in the root directory (you can copy the provided `.env.template`) and add your keys:
 - **LangSmith API Key** (Required for tracing/observability)
