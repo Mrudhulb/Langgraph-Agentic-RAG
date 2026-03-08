@@ -6,6 +6,7 @@ from pathlib import Path
 import glob
 import time
 import logging
+import docx2txt
 from functools import wraps
 
 # Setup logger
@@ -60,3 +61,16 @@ def pdfs_to_markdowns(path_pattern, overwrite: bool = False):
         md_path = (output_dir / pdf_path.stem).with_suffix(".md")
         if overwrite or not md_path.exists():
             pdf_to_markdown(pdf_path, output_dir)
+
+def docx_to_markdown(docx_path, output_dir):
+    try:
+        text = docx2txt.process(docx_path)
+        if text is None:
+            text = ""
+        
+        # docx2txt just extracts raw text. We'll save it as a markdown file.
+        output_path = Path(output_dir) / Path(docx_path).stem
+        Path(output_path).with_suffix(".md").write_text(text, encoding="utf-8")
+        logger.info(f"✨ Converted Word document {Path(docx_path).name}")
+    except Exception as e:
+        logger.error(f"Error converting Word document {docx_path}: {e}")

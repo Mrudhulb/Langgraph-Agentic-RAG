@@ -1,7 +1,7 @@
 from pathlib import Path
 import shutil
 import config
-from util import pdfs_to_markdowns, log_timing  
+from util import pdfs_to_markdowns, pdf_to_markdown, docx_to_markdown, log_timing
 
 class DocumentManager:
 
@@ -16,10 +16,12 @@ class DocumentManager:
             return 0, 0
             
         document_paths = [document_paths] if isinstance(document_paths, str) else document_paths
-        document_paths = [p for p in document_paths if p and Path(p).suffix.lower() in [".pdf", ".md"]]
+        allowed_extensions = [".pdf", ".md", ".doc", ".docx"]
+        document_paths = [p for p in document_paths if p and Path(p).suffix.lower() in allowed_extensions]
         
         if not document_paths:
             return 0, 0
+
             
         added = 0
         skipped = 0
@@ -36,10 +38,13 @@ class DocumentManager:
                 continue
                 
             try:            
-                if Path(doc_path).suffix.lower() == ".md":
+                ext = Path(doc_path).suffix.lower()
+                if ext == ".md":
                     shutil.copy(doc_path, md_path)
+                elif ext in [".doc", ".docx"]:
+                    docx_to_markdown(str(doc_path), self.markdown_dir)
                 else:
-                    pdfs_to_markdowns(str(doc_path), overwrite=False)            
+                    pdf_to_markdown(str(doc_path), self.markdown_dir)
                 parent_chunks, child_chunks = self.rag_system.chunker.create_chunks_single(md_path)
                 
                 if not child_chunks:
@@ -53,7 +58,9 @@ class DocumentManager:
                 added += 1
                 
             except Exception as e:
+                import traceback
                 print(f"Error processing {doc_path}: {e}")
+                traceback.print_exc()
                 skipped += 1
             
         return added, skipped

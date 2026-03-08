@@ -1,3 +1,4 @@
+# Requires Python 3.12
 aiofiles==24.1.0
 annotated-doc==0.0.4
 annotated-types==0.7.0
@@ -132,3 +133,10 @@ uvicorn==0.40.0
 wcwidth==0.2.14
 xxhash==3.6.0
 zstandard==0.25.0
+
+# Added for Multi-Provider & Tool Support
+tavily-python>=0.3.0
+langchain-openai>=0.2.0
+langchain-anthropic>=0.2.0
+langchain-google-genai>=2.0.0
+docx2txt==0.9

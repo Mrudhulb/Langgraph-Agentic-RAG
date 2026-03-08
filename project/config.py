@@ -1,3 +1,9 @@
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 # --- Directory Configuration ---
 MARKDOWN_DIR = "markdown_docs"
 PARENT_STORE_PATH = "parent_store"
@@ -35,22 +41,22 @@ LLM_CONFIGS = {
     "openai": {
         "model": "gpt-4o", # <your_OpenAI_model_name>
         "temperature": 0,
-        "api_key": "<your_api_key>"
+        "api_key": os.getenv("OPENAI_API_KEY", "<your_api_key>")
     },
     "openrouter": {
         "model": "nvidia/nemotron-3-nano-30b-a3b:free", # <your_OpenRouter_model_name>
         "temperature": 0,
-        "api_key": "<your_api_key>"
+        "api_key": os.getenv("OPENROUTER_API_KEY", "<your_api_key>")
     },
     "anthropic": {
         "model": "claude-sonnet-4-20250514", # <your_Anhropic_model_name>
         "temperature": 0,
-        "api_key": "<your_api_key>"
+        "api_key": os.getenv("ANTHROPIC_API_KEY", "<your_api_key>")
     },
     "google": {
         "model": "gemini-2.5-flash", # <your_Google_model_name>
         "temperature": 0,
-        "api_key": "<your_api_key>"
+        "api_key": os.getenv("GOOGLE_API_KEY", "<your_api_key>")
     }
 }
 
@@ -58,14 +64,14 @@ LLM_CONFIGS = {
 ACTIVE_LLM_CONFIG = "openrouter" # <your_active_provider_name>
 
 # --- LangSmith Tracing ---
-LANGCHAIN_TRACING_V2 = 'true'
-LANGCHAIN_ENDPOINT = 'https://api.smith.langchain.com'
-LANGCHAIN_API_KEY = '<your_api_key>' # <your_api_key>
-LANGCHAIN_PROJECT = '<your_project_name>' # <your_project_name>
+LANGCHAIN_TRACING_V2 = os.getenv("LANGCHAIN_TRACING_V2", "true")
+LANGCHAIN_ENDPOINT = os.getenv("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com")
+LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY", "<your_api_key>") # <your_api_key>
+LANGCHAIN_PROJECT = os.getenv("LANGCHAIN_PROJECT", "<your_project_name>") # <your_project_name>
 
 # --- OCR Configuration ---
 OCR_ENABLED = True # Set to True to enable auto-OCR for image-based PDFs
-OCR_MODEL = "nvidia/nemotron-nano-12b-v2-vl:free" # <your_VLM_model_name>
+OCR_MODEL = '<your_VLM_model_name>' # <your_VLM_model_name>
 
 # --- Tavily Search Configuration ---
-TAVILY_API_KEY = "<your_tavily_api_key>" # <your_tavily_api_key>
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "<your_tavily_api_key>") # <your_tavily_api_key>

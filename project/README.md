@@ -31,8 +31,10 @@ The application will be available at `http://localhost:7860` (default Gradio por
 
 ### Prerequisites
 
-- Python 3.10+
-- Ollama (local) or API keys for OpenAI, Anthropic, or Google Gemini
+- Python 3.12
+- API keys for LLM providers (e.g., OpenAI, Anthropic, Google Gemini, OpenRouter) or Ollama for local models
+- API key for LangSmith (required for tracing and observability)
+- API key for Tavily (required for agentic web searches)
 
 ---
 
@@ -42,14 +44,16 @@ This system implements an advanced RAG pipeline with the following key features:
 
 - **Parent-Child Chunking**: Documents are split into small child chunks (for precise retrieval) linked to larger parent chunks (for rich context)
 - **Hybrid Search**: Combines dense embeddings and sparse (BM25) retrieval for optimal results
-- **LangGraph Agent**: Orchestrates query rewriting, retrieval, and response generation
-- **Multi-Provider Support**: Seamlessly switch between Ollama, OpenAI, Google Gemini, and Anthropic Claude
+- **LangGraph Agent**: Orchestrates query rewriting, retrieval, and response generation with access to web search via Tavily
+- **Multi-Provider Support**: Seamlessly switch between LLMs from OpenAI, Google Gemini, Anthropic Claude, OpenRouter, and Ollama by just updating `config.py`
 - **Vector Storage**: Uses Qdrant for efficient similarity search
+- **Document Support**: Native parsing for PDF, Markdown, and Word (.doc, .docx) formats, including OCR for image-based PDFs
+- **Observability**: Built-in LangSmith tracing to monitor agent decisions, tool calls, and LLM behavior
 
 ### Data Flow
 
 ```
-PDF → Markdown Conversion → Parent/Child Chunking → Vector Indexing → Agent Retrieval → LLM Response
+Document (PDF/Word/MD) → Markdown Conversion → Parent/Child Chunking → Vector Indexing → Agent Retrieval & Web Search → LLM Response
 ```
 
 ---
@@ -147,6 +151,23 @@ HEADERS_TO_SPLIT_ON = [
 ]
 ```
 
+### LangSmith, OCR, & Tools Configuration
+
+```python
+# --- LangSmith Tracing ---
+LANGCHAIN_TRACING_V2 = 'true'
+LANGCHAIN_ENDPOINT = 'https://api.smith.langchain.com'
+LANGCHAIN_API_KEY = '<your_api_key>'
+LANGCHAIN_PROJECT = '<your_project_name>'
+
+# --- OCR Configuration ---
+OCR_ENABLED = True
+OCR_MODEL = '<your_VLM_model_name>'
+
+# --- Tavily Search Configuration ---
+TAVILY_API_KEY = '<your_tavily_api_key>'
+```
+
 ---
 
 ## Common Customizations
@@ -202,40 +223,50 @@ This approach allows you to maintain multiple provider configurations and switch
 pip install langchain-openai langchain-anthropic langchain-google-genai
 ```
 
-**Step 2:** Set environment variables
+**Step 2:** Set up your environment variables
+
+Create a `.env` file in the root directory (you can copy `.env.template`) and add your keys:
 
 ```bash
-export OPENAI_API_KEY="your-openai-key"
-export ANTHROPIC_API_KEY="your-anthropic-key"
-export GOOGLE_API_KEY="your-google-key"
+OPENAI_API_KEY=your-openai-key
+ANTHROPIC_API_KEY=your-anthropic-key
+GOOGLE_API_KEY=your-google-key
 ```
 
-**Step 3:** Update `project/config.py` with multi-provider configuration
+**Step 3:** Update `project/config.py` with multi-provider configuration. The configuration is already setup to read from your `.env` file:
 
 ```python
 # --- Multi-Provider LLM Configuration ---
 LLM_CONFIGS = {
     "ollama": {
         "model": "llama3.2:3b",
-        "url":"http://localhost:11434"
+        "url":"http://localhost:11434",
         "temperature": 0
     },
     "openai": {
         "model": "gpt-4o",
-        "temperature": 0
+        "temperature": 0,
+        "api_key": os.getenv("OPENAI_API_KEY")
+    },
+    "openrouter": {
+        "model": "nvidia/nemotron-3-nano-30b-a3b:free",
+        "temperature": 0,
+        "api_key": os.getenv("OPENROUTER_API_KEY")
     },
     "anthropic": {
         "model": "claude-sonnet-4-20250514",
-        "temperature": 0
+        "temperature": 0,
+        "api_key": os.getenv("ANTHROPIC_API_KEY")
     },
     "google": {
         "model": "gemini-2.5-flash",
-        "temperature": 0
+        "temperature": 0,
+        "api_key": os.getenv("GOOGLE_API_KEY")
     }
 }
 
 # Switch providers by changing this single line
-ACTIVE_LLM_CONFIG = "ollama"
+ACTIVE_LLM_CONFIG = "openrouter"
 ```
 
 **Step 4:** Modify `project/core/rag_system.py` in the `initialize()` method
@@ -288,12 +319,13 @@ ACTIVE_LLM_CONFIG = "google"  # Switch to Gemini Pro
 
 **Provider Reference Table:**
 
-| Provider | Environment Variable | Import Statement | Example Models |
-|----------|---------------------|------------------|----------------|
-| OpenAI | `OPENAI_API_KEY` | `from langchain_openai import ChatOpenAI` | `gpt-4o`, `gpt-4o-mini` |
-| Anthropic | `ANTHROPIC_API_KEY` | `from langchain_anthropic import ChatAnthropic` | `claude-opus-4-20250514`, `claude-sonnet-4-20250514` |
-| Google | `GOOGLE_API_KEY` | `from langchain_google_genai import ChatGoogleGenerativeAI` | `gemini-2.5-pro`, `gemini-2.5-flash` |
-| Ollama | None (local) | `from langchain_ollama import ChatOllama` | `qwen3:4b-instruct-2507-q4_K_M`, `ministral-3:8b-instruct-2512-q4_K_M`, `llama3.1:8b-instruct-q6_K` |
+| Provider | Setup Location | Import Statement | Example Models |
+|----------|----------------|------------------|----------------|
+| OpenAI | `config.py` | `from langchain_openai import ChatOpenAI` | `gpt-4o`, `gpt-4o-mini` |
+| Anthropic| `config.py` | `from langchain_anthropic import ChatAnthropic` | `claude-opus-4-20250514`, `claude-sonnet-4-20250514` |
+| Google | `config.py` | `from langchain_google_genai import ChatGoogleGenerativeAI` | `gemini-2.5-pro`, `gemini-2.5-flash` |
+| OpenRouter| `config.py` | `from langchain_openai import ChatOpenAI` | `nvidia/nemotron-3-nano-30b-a3b:free` |
+| Ollama | `config.py` | `from langchain_ollama import ChatOllama` | `llama3.2:3b`, `qwen3:4b-instruct-2507-q4_K_M` |
 
 ---
 
