@@ -1064,10 +1064,10 @@ The easiest way to get started:
 
 ```bash
 # Clone the repository
-git clone <repo-url>
-cd agentic-rag-for-dummies
+git clone https://github.com/Mrudhulb/Langgraph-Agentic-RAG.git
+cd Agentic-RAG
 
-# Create virtual environment (recommended)
+# Create virtual environment - Use only Python 3.12
 python -m venv venv
 
 # Activate it
