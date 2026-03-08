@@ -13,11 +13,25 @@ An **Agentic Retrieval-Augmented Generation (RAG)** system built with **LangGrap
 
 ### Installation
 
-Install all required dependencies:
+**Requires Python 3.12**
 
+**Step 1:** Clone the repository
+```bash
+git clone https://github.com/Mrudhulb/Langgraph-Agentic-RAG.git
+cd Langgraph-Agentic-RAG
+```
+
+**Step 2:** Install all required dependencies
 ```bash
 pip install -r requirements.txt
 ```
+
+**Step 3:** Configure API Keys
+To run the RAG agent, you MUST configure your environment with the necessary API keys.
+Create a `.env` file in the root directory (you can copy the provided `.env.template`) and add your keys:
+- **LangSmith API Key** (Required for tracing/observability)
+- **Tavily API Key** (Required for the agent to search the web)
+- **LLM Provider API Key** (e.g., OpenAI, Anthropic, Google, OpenRouter) OR install **Ollama** locally.
 
 ### Running the Application
 
